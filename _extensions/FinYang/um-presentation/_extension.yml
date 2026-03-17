@@ -1,0 +1,28 @@
+title: Um-presentation
+author: Yangzhuoran Yang
+version: 1.0.0
+quarto-required: ">=1.7.0"
+contributes:
+  formats:
+    beamer:
+      toc: false
+      toc-depth: 1
+      toc-title: Outline
+      aspectratio: 169
+      fontsize: 14pt
+      section-titles: false
+      pdf-engine: pdflatex
+      fig-width: 9
+      fig-height: 4.5
+      date-format: "D MMMM YYYY"
+      slide-number: true
+      show-slide-number: all
+      titlecolor: white
+      titlegraphic: bg-wide.jpg
+      # titlelogo: logo-72dpi.jpg
+      template-partials:
+        - before-title.tex
+        - toc.tex
+      format-resources:
+        - beamerthemeUM.sty
+

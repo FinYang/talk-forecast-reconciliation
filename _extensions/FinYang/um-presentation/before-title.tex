@@ -1,0 +1,48 @@
+\usetheme{UM}
+
+$if(toc)$
+% Outline at start of each section
+\AtBeginSection[]{
+  \begin{frame}{Outline}\vspace*{0.7cm}
+    \tableofcontents[currentsection,hideallsubsections]
+    % hideallsubsections increases and fixes the vertical space
+    % between sections in toc
+  \end{frame}
+}
+$endif$
+
+% title page
+\setbeamerfont{title}{series=\bfseries,parent=structure,size=\fontsize{$if(titlefontsize)$$titlefontsize$$else$22$endif$}{28}}
+\setbeamertemplate{title page}
+{
+  \placefig{-0.01}{-0.01}{width=1.01\paperwidth,height=1.01\paperheight}{$titlegraphic$}
+  %   shading
+  \begin{textblock}{12.8}(0,0)
+    \begin{tikzpicture}[remember picture,overlay]
+      \fill[UMDarkBlue, opacity=0.6]
+      (current page.south west) rectangle (current page.north east);
+    \end{tikzpicture}
+  \end{textblock}
+  %   \placefig{8}{0.7}{width=3cm}{$titlelogo$}
+  \begin{textblock}{10}(1.4,2.2)\usebeamerfont{title}
+    {\color{$titlecolor$}\raggedright\par\inserttitle}
+  \end{textblock}
+  \begin{textblock}{8.7}(1.4,6)
+    {\color{$titlecolor$}\raggedright{\insertauthor}\mbox{}\\[0.2cm]
+    \insertdate}
+  \end{textblock}
+}
+
+% Find images
+\graphicspath{
+  {_extensions/um-presentation/_images/background/}
+  {_extensions/FinYang/um-presentation/_images/background/}
+  {_extensions/um-presentation/_images/logo/}
+  {_extensions/FinYang/um-presentation/_images/logo/}
+  {figs/}{figures/}{images/}{img/}
+}
+
+% Fix longtable undefined theHtable issue
+\ifdefined\theHtable\else
+\newcommand{\theHtable}{\thetable}
+\fi

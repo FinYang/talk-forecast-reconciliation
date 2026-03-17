@@ -1,0 +1,18 @@
+% Modified from https://github.com/quarto-monash/presentation
+% Yangzhuoran Yang 17 Oct 2025
+
+$if(toc)$
+$if(toc-title)$
+\renewcommand*\contentsname{$toc-title$}
+$endif$
+\begin{frame}{$if(toc-title)$$toc-title$$else$Outline$endif$}
+  \vspace*{0.7cm}
+  \tableofcontents[hideallsubsections]
+\end{frame}
+$endif$
+$if(lof)$
+\listoffigures
+$endif$
+$if(lot)$
+\listoftables
+$endif$

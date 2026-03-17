@@ -1,0 +1,183 @@
+% Modified from https://github.com/quarto-monash/presentation
+% Yangzhuoran Yang 13 Jun 2025
+
+\RequirePackage{beamerthememetropolis}
+% \beamer@centeredfalse
+
+% Used to overlay a shading layer on top of the background
+\usepackage{tikz}
+
+% Absolute figure placement
+\RequirePackage[absolute,overlay]{textpos}
+\setlength{\TPHorizModule}{1cm}
+\setlength{\TPVertModule}{1cm}
+\def\placefig#1#2#3#4{
+  \begin{textblock}{.1}(#1,#2)\rlap{\includegraphics[#3]{#4}}
+\end{textblock}}
+
+% Fonts
+\ifPDFTeX
+\usepackage[scaled=0.85]{sourcecodepro}
+\usepackage[sfdefault,lf]{FiraSans}
+\usepackage{etoolbox}
+\patchcmd{\@verbatim}
+{\verbatim@font}
+{\verbatim@font\fontsize{10}{10}\tt}
+{}{}
+\else % if luatex or xetex
+\usepackage[fira]{fontsetup}
+\setmonofont[Scale=0.85]{SourceCodePro-Regular.otf}
+\def\verbatim@font{\fontsize{10}{10}\tt}%
+\fi
+\usepackage{mathrsfs}
+
+%% Colors
+\definecolor{DarkGrey}{RGB}{100,100,100}
+\definecolor{DarkYellow}{RGB}{230, 172, 0}
+% \definecolor{grey}{RGB}{191,191,191}
+% \definecolor{LightGrey}{RGB}{231,231,231}
+% \definecolor{Orange}{RGB}{204, 89, 0}
+\definecolor{shadecolor}{RGB}{225,225,225}
+
+\definecolor{UMDarkBlue}{HTML}{001C3D}
+\definecolor{UMWhite}{HTML}{FFFFFF}
+\definecolor{UMOrangeRed}{HTML}{E84E10}
+\definecolor{UMLightBlue}{HTML}{00A2DB}
+
+
+\setbeamercolor{alerted text}{fg=UMOrangeRed}
+\setbeamercolor{block body alerted}{fg=black,bg=DarkYellow}
+\setbeamercolor{block body}{fg=black,bg=black!15!white}
+\setbeamercolor{block title alerted}{fg=white,bg=black}
+\setbeamercolor{block title}{fg=white,bg=UMDarkBlue}
+\setbeamercolor{description item}{fg=UMOrangeRed}
+\setbeamercolor{enumerate item}{fg=UMOrangeRed,bg=white}
+\setbeamercolor{enumerate subitem}{fg=UMOrangeRed,bg=DarkGrey}
+\setbeamercolor{frametitle}{bg=UMDarkBlue,fg=white}
+\setbeamercolor{itemize item}{fg=UMOrangeRed}
+\setbeamercolor{itemize subitem}{fg=UMOrangeRed}
+\setbeamercolor{itemize}{fg=black}
+\setbeamercolor{normal text}{fg=black,bg=black!2}
+\setbeamercolor{progress bar}{fg=UMOrangeRed}
+\setbeamercolor{section in toc shaded}{fg=DarkYellow}
+\setbeamercolor{section in toc}{fg=UMOrangeRed}
+\setbeamercolor{section number projected}{bg=UMOrangeRed,fg=white}
+\setbeamercolor{section}{fg=UMDarkBlue}
+\setbeamercolor{structure}{fg=UMDarkBlue}
+\setbeamercolor{subsection}{fg=UMDarkBlue}
+\setbeamercolor{title}{fg=white,bg=UMDarkBlue}
+\usebeamercolor[fg]{normal text}
+\def\shadecolor{\relax}
+
+
+% No section pages
+\metroset{sectionpage=none,subsectionpage=none}
+
+% Lets make descriptions and alerts bold
+\setbeamerfont{description item}{series=\bfseries}
+\setbeamerfont{alerted text}{series=\bfseries}
+
+% Footer progress bar
+\metroset{progressbar=foot}
+
+% Plenty of room
+\setlength{\metropolis@frametitle@padding}{1.6ex}
+% \setbeamertemplate{frametitle}{%
+% \nointerlineskip
+% \begin{beamercolorbox}[wd=\paperwidth,leftskip=0.3cm,rightskip=0.3cm,ht=2.2ex,dp=1.2ex]{frametitle}
+%   \usebeamerfont{frametitle}\MakeLowercase{\protect\insertframetitle}%
+% \end{beamercolorbox}
+% }
+% Plenty of room
+\setbeamersize{text margin left=2em,text margin right=2em}
+
+
+% Rounded corners on boxes
+\useinnertheme{rounded}
+
+% Square bullets and enumerated items
+\setbeamertemplate{items}[square]
+
+% larger squares for enumeration
+\defbeamertemplate{enumerate item}{mysquare}
+{ \raisebox{-0.ex}{\hbox{%
+      \usebeamerfont*{item projected}%
+      \usebeamercolor{enumerate item}%
+      \vrule width4ex height2.7ex depth.7ex%
+      \hskip-4ex%
+      \hbox to4ex{%
+        \hfil%
+        \color{white}\raisebox{.2ex}{\insertenumlabel}%
+      \hfil}%
+  }}%
+}
+[action]
+{\setbeamerfont{item projected}{size=\scriptsize}}
+\setbeamertemplate{enumerate item}[mysquare]
+\setbeamertemplate{itemize item}[square]
+\setbeamertemplate{items}[mysquare]
+
+% Triangle and stars for nested itemize lists
+\usesubitemizeitemtemplate{%
+  \tiny\raise1.5pt\hbox{\color{beamerstructure}$\blacktriangleright$}%
+}
+\usesubsubitemizeitemtemplate{%
+  \tiny\raise1.5pt\hbox{\color{beamerstructure}$\bigstar$}%
+}
+
+
+% Redefine shaded environment if it exists (for R plots)
+\ifcsname Shaded\endcsname
+\definecolor{shadecolor}{RGB}{225,225,225}
+\renewenvironment{Shaded}{\color{black}\fontsize{10}{10}\sf
+\begin{snugshade}\color{black}}{
+\end{snugshade}}
+\fi
+
+% Make page number grey in a box
+% \setbeamertemplate{footline}{%
+% \hfill\textcolor[rgb]{0.7,0.7,0.7}{\fbox{\insertframenumber{}}}}
+
+
+\beamertemplatenavigationsymbolsempty
+
+% Modify reference size
+\newcommand{\oldbibitem}[2][]{}
+\let\oldbibitem\bibitem
+\renewcommand{\bibitem}[2][]{\oldbibitem[#1]{#2}\scriptsize}
+
+% Original from Pandoc's templates
+% GPL-3 license
+% https://github.com/jgm/pandoc/blob/734f86061893e81a14ef94432555f4edd24b2b8f/data/templates/default.latex#L386-L398
+% From Quarto beamer template
+% https://github.com/quarto-dev/quarto-cli/blob/487fd0e92ada5bf1673585643911b411db952f8a/src/resources/formats/beamer/pandoc/citations.tex#L20-L32
+% Modified to remove space between entries
+\@ifundefined{CSLReferences}
+{}% Do nothing if undefined
+{
+  \renewenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
+  {
+    \begin{list}{}{%
+        \setlength{\itemindent}{0pt}
+        \setlength{\leftmargin}{0pt}
+        \setlength{\parsep}{-12pt} % MODIFIED 0 -> -12
+        % turn on hanging indent if param 1 is 1
+        \ifodd #1
+        \setlength{\leftmargin}{\cslhangindent}
+        \setlength{\itemindent}{-1\cslhangindent}
+        \fi
+        % set entry spacing
+    \setlength{\itemsep}{#2\baselineskip}}}
+    {
+  \end{list}}
+}%
+
+% Tighter table of contents
+\usepackage{etoolbox}
+\pretocmd{\section}{\addtocontents{toc}{\protect\addvspace{-20\p@}}}{}{}
+\setbeamertemplate{section in toc}[square]
+\setbeamerfont{section number projected}{size=\large}
+\setbeamertemplate{section in toc shaded}[default][50]
+
+% math packages
+\usepackage{bm}
