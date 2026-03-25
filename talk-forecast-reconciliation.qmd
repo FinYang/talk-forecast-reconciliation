@@ -1,0 +1,373 @@
+---
+title: Forecast Reconciliation
+author: "杨杨卓然 Yangzhuoran Fin Yang"
+date: 27 March 2026
+pdf-engine: xelatex
+toc: true
+format:
+  um-presentation-beamer: 
+    smartquotes: true
+include-in-header: 
+  text: |
+    \usepackage[UTF8, fontset=none]{ctex}
+    \setCJKmainfont[Scale=1.1]{Microsoft YaHei}
+execute: 
+  echo: false
+  cache: refresh
+---
+
+```{r}
+#| label: setup
+#| echo: false
+#| cache: false
+
+library(tidyverse)
+
+theme_set(theme(
+  plot.background = element_blank(),
+  legend.background = element_blank(),
+  text = element_text(size = 21)
+))
+
+cbf_palette_grey <- c(
+  "#D55E00",
+  "#0072B2",
+  "#009E73",
+  "#CC79A7",
+  "#E69F00",
+  "#56B4E9",
+  "#F0E442",
+  "#999999"
+)
+
+options(ggplot2.discrete.fill = cbf_palette_grey)
+options(ggplot2.discrete.colour = cbf_palette_grey)
+
+library(hts)
+library(fpp2)
+library(fpp3)
+
+```
+
+
+# Hierarchical and grouped time series
+
+## Australian tourism regions
+
+![](https://raw.githubusercontent.com/GeorgeAthana/FLAP-presentation/main/figs/aus_map.png)
+
+\only<2>{\begin{textblock}{6.4}(9.1,3)
+\begin{block}{}%\fontsize{13}{14}\sf
+  \begin{itemize}\itemsep=0cm\parskip=0cm
+    \item Monthly data on visitor night from 1998 -- 2019
+    \begin{itemize}
+    \item 7 states
+    \item 27 zones
+    \item 75 regions
+    \end{itemize}
+  \end{itemize}
+\end{block}
+\end{textblock}}
+
+
+## Australian tourism data
+```{r}
+
+tourism.hts <- hts(visnights, characters = c(3, 5))
+p1 <- tourism.hts %>%
+  aggts(levels = 0) %>%
+  autoplot() +
+  xlab("Year") +
+  ylab("millions") +
+  ggtitle("Visitor nights") +
+  theme(plot.background = element_rect(fill = '#FAFAFA', colour = '#FAFAFA'))
+groups <- aggts(tourism.hts, level = 1:2)
+cols <- sample(scales::hue_pal(
+  h = c(15, 375),
+  c = 100,
+  l = 65,
+  h.start = 0,
+  direction = 1
+)(NCOL(groups)))
+cols[1:6] <- "black"
+p2 <- (plotdata <- as_tibble(groups) %>%
+  gather(Series) %>%
+  mutate(
+    Date = rep(time(groups), NCOL(groups)),
+    Group = substring(Series, 1, 3)
+  )) %>%
+  ggplot(aes(x = Date, y = value, group = Series, colour = Series)) +
+  geom_line() +
+  # scale_colour_identity() +
+  xlab("Year") +
+  ylab("millions") +
+  scale_colour_manual(values = `names<-`(cols, unique(plotdata$Series))) +
+  facet_grid(. ~ Group, scales = "free_y") +
+  # scale_x_continuous(breaks=seq(2006,2016,by=2)) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  theme(plot.background = element_rect(fill = '#FAFAFA', colour = '#FAFAFA'))
+p_tourism <- gridExtra::marrangeGrob(
+  list(p1, p2),
+  ncol = 1,
+  nrow = 2,
+  top = NULL
+)
+p_tourism
+```
+
+## Australian tourism data
+
+```{r}
+#| echo: true
+tsibble::tourism
+```
+
+
+## Hierarchical time series
+
+```{mermaid}
+%% fig-width: 2.5
+graph TB
+Total((Total)):::top --- A((A)):::middle
+Total --- B((B)):::middle
+A --- AA((AA)):::bottom
+A --- AB((AB)):::bottom
+B --- BA((BA)):::bottom
+B --- BB((BB)):::bottom
+```
+
+\begin{textblock}{6.4}(9.1,3)
+
+$$
+y_t = y_{AA, t} + y_{AB, t} + y_{BA, t} + y_{BB, t}
+$$
+$$
+y_{A, t} = y_{AA, t} + y_{AB, t} 
+$$
+$$
+y_{B, t} = y_{BA, t} + y_{BB, t}
+$$
+\end{textblock}
+
+## Grouped time series
+
+
+:::: {.columns}
+
+::: {.column width="50%"}
+```{mermaid}
+%%| fig-width: 2.8
+graph TB
+Total((Total))--- A((A))
+Total --- B((B))
+A --- AX((AX))
+A --- AY((AY))
+B --- BX((BX))
+B --- BY((BY))
+```
+
+:::
+::: {.column width="50%"}
+
+```{mermaid}
+%%| fig-width: 2.8
+graph TB
+Total((Total))--- X((X))
+Total --- Y((Y))
+X --- AX((AX))
+X --- AY((AY))
+Y --- BX((BX))
+Y --- BY((BY))
+```
+
+:::
+::::
+
+## Australian prison population
+
+```{r}
+prison <- readr::read_csv(
+  "https://OTexts.com/fpp3/extrafiles/prison_population.csv"
+) |>
+  mutate(Quarter = yearquarter(Date)) |>
+  select(-Date) |>
+  as_tsibble(key = c(Gender, Legal, State, Indigenous), index = Quarter) |>
+  relocate(Quarter)
+
+prison_gts <- prison |>
+  aggregate_key(Gender * Legal * State, Count = sum(Count) / 1e3)
+```
+
+```{r}
+prison
+```
+
+## Australian prison population
+
+```{r}
+prison |>
+  group_by(Legal, Gender) |>
+  summarise(Count = sum(Count)) |>
+  as_tibble() |>
+  ungroup() |>
+  ggplot(aes(x = Quarter, y = Count, colour = Gender)) +
+  geom_line() +
+  facet_grid(cols = vars(Legal))
+```
+
+## Australian prison population
+
+```{r}
+prison |>
+  group_by(Legal, State) |>
+  summarise(Count = sum(Count)) |>
+  as_tibble() |>
+  ungroup() |>
+  ggplot(aes(x = Quarter, y = Count, colour = State)) +
+  geom_line() +
+  facet_grid(cols = vars(Legal))
+```
+
+## Australian prison population
+
+```{r}
+prison |>
+  group_by(Legal, State, Gender) |>
+  summarise(Count = sum(Count)) |>
+  as_tibble() |>
+  ungroup() |>
+  ggplot(aes(x = Quarter, y = Count, colour = State)) +
+  geom_line() +
+  facet_grid(rows = vars(Gender), cols = vars(Legal), scale = "free")
+```
+
+## Mixed hierarchical and grouped structure
+
+```{r}
+#| echo: true
+tsibble::tourism
+```
+
+## Travel purpose
+
+```{r}
+tsibble::tourism |>
+  group_by(State, Purpose) |>
+  summarise(Trips = sum(Trips)) |>
+  ungroup() |>
+  ggplot(aes(x = Quarter, y = Trips, colour = State)) +
+  geom_line() +
+  facet_wrap(vars(Purpose), scales = "free_y")
+```
+
+
+# Traditional approaches
+
+## Forecasting method recap
+
+```{r}
+tourism_total <- tourism |>
+  summarise(Trips = sum(Trips))
+tourism_total |>
+  model(ETS = ETS(Trips), ARIMA = ARIMA(Trips)) |>
+  forecast() |>
+  autoplot(slice_tail(tourism_total, n = 16))
+```
+
+## Single level approaches 
+
+\begin{block}{Goal}
+Obtain forecasts of every series at all levels, but they need to add up based on the hierarchical structure (__"coherent"__).
+\end{block}
+
+:::: {.columns}
+
+::: {.column width="50%"}
+```{mermaid}
+%%| fig-width: 2.5
+graph TB
+Total((Total)) --- A((A))
+Total --- B((B))
+A --- AA((AA))
+A --- AB((AB))
+B --- BA((BA))
+B --- BB((BB))
+```
+
+:::
+::: {.column width="50%"}
+
+- Bottom-up
+\pause
+- Top-down
+\pause
+- Middle-out
+
+:::
+::::
+
+## Bottom-up
+
+```{mermaid}
+%%| fig-width: 2.5
+graph TB
+Total((Total)):::top --- A((A)):::middle
+Total --- B((B)):::middle
+A --- AA((AA)):::bottom
+A --- AB((AB)):::bottom
+B --- BA((BA)):::bottom
+B --- BB((BB)):::bottom
+```
+
+\begin{textblock}{7}(8,1)
+
+$$
+y_t = y_{AA, t} + y_{AB, t} + y_{BA, t} + y_{BB, t}
+$$
+$$
+y_{A, t} = y_{AA, t} + y_{AB, t} 
+$$
+$$
+y_{B, t} = y_{BA, t} + y_{BB, t}
+$$
+\end{textblock}
+
+\only<2>{\begin{textblock}{7}(8,4.3)
+$$
+\tilde{y}_t = \hat{y}_{AA, h} + \hat{y}_{AB, h} + \hat{y}_{BA, h} + \hat{y}_{BB, h}
+$$
+$$
+\tilde{y}_{A, h} = \hat{y}_{AA, h} + \hat{y}_{AB, h} 
+$$
+$$
+\tilde{y}_{B, h} = \hat{y}_{BA, h} + \hat{y}_{BB, h}
+$$
+
+\end{textblock}
+}
+
+## Terminology
+
+- $y_{AA, t}$ and friends: the __bottom__ level series.
+- $y_t$ the __top__ level series.
+- $y_{AA, t}$: The historical value of series $AA$ at time $t$.
+- $\hat{y}_{AA, h}$: The $h$-step-ahead forecast for series $AA$ from a forecast model, potentially independently from other series. The __base__ forecast.
+- $\tilde{y}_{A, h}$: The __reconciled__ $h$-step-ahead forecast for series $A$ that is __coherent__.
+
+## Top-down
+
+
+
+
+# Forecast reconciliation
+
+
+# Variance covariance estimation
+
+# Properties
+
+# Geometry
+
+# Artificial hierarchy: FLAP
+
+# Temporal and cross-temporal  forecast reconciliation
