@@ -1,19 +1,25 @@
 ---
-title: Forecast Reconciliation
-author: "杨杨卓然 Yangzhuoran Fin Yang"
+title: A Crash Course in\newline Forecast Reconciliation
+author: "\\begin{CJK}{UTF8}{gbsn}杨杨卓然\\end{CJK}Yangzhuoran Fin Yang"
 date: 27 March 2026
-pdf-engine: xelatex
+pdf-engine: pdflatex
 toc: true
+bibliography: refs.bib
 format:
-  um-presentation-beamer: 
-    smartquotes: true
+  um-presentation-beamer: default
 include-in-header: 
   text: |
-    \usepackage[UTF8, fontset=none]{ctex}
-    \setCJKmainfont[Scale=1.1]{Microsoft YaHei}
+    \def\Var{\operatorname{Var}}
+    \def\Cov{\operatorname{Cov}}
+    \def\E{\operatorname{E}}
+    \def\tr{\operatorname{tr}}
+    \usepackage{CJKutf8}
+    \usepackage{fontawesome5}
+    % \usepackage[UTF8, fontset=none]{ctex}
+    % \setCJKmainfont[Scale=1.1]{Microsoft YaHei}
 execute: 
   echo: false
-  cache: refresh
+  cache: true
 ---
 
 ```{r}
@@ -49,6 +55,28 @@ library(fpp3)
 
 ```
 
+
+## About Me
+
+\begin{block}{Yangzhuoran Fin Yang}
+Assistant professor in Statistical Learning\newline
+Department of Data Analytics and Digitalisation\newline
+Maastricht University, the Netherlands
+\end{block}
+- Time series forecasting  
+- Outlier dectection 
+- R packages
+
+
+\faIcon{home} \href{https://yangzhuoranyang.com}{yangzhuoranyang.com}\newline
+\faIcon{envelope} \href{mailto:yangzhuoran.yang@maastrichtuniversity.nl}{yangzhuoran.yang@maastrichtuniversity.nl}
+
+\placefig{11}{4.15}{width=3.5cm}{qr-code.png}
+
+## Outline
+
+\vspace*{0.7cm}
+\tableofcontents[hideallsubsections]
 
 # Hierarchical and grouped time series
 
@@ -125,16 +153,7 @@ tsibble::tourism
 
 ## Hierarchical time series
 
-```{mermaid}
-%% fig-width: 2.5
-graph TB
-Total((Total)):::top --- A((A)):::middle
-Total --- B((B)):::middle
-A --- AA((AA)):::bottom
-A --- AB((AB)):::bottom
-B --- BA((BA)):::bottom
-B --- BB((BB)):::bottom
-```
+![](hierarchical.png){width=50%}
 
 \begin{textblock}{6.4}(9.1,3)
 
@@ -155,30 +174,11 @@ $$
 :::: {.columns}
 
 ::: {.column width="50%"}
-```{mermaid}
-%%| fig-width: 2.8
-graph TB
-Total((Total))--- A((A))
-Total --- B((B))
-A --- AX((AX))
-A --- AY((AY))
-B --- BX((BX))
-B --- BY((BY))
-```
-
+![](grouped-1.png){width=100%}
 :::
 ::: {.column width="50%"}
 
-```{mermaid}
-%%| fig-width: 2.8
-graph TB
-Total((Total))--- X((X))
-Total --- Y((Y))
-X --- AX((AX))
-X --- AY((AY))
-Y --- BX((BX))
-Y --- BY((BY))
-```
+![](grouped-2.png){width=100%}
 
 :::
 ::::
@@ -277,22 +277,14 @@ tourism_total |>
 ## Single level approaches 
 
 \begin{block}{Goal}
-Obtain forecasts of every series at all levels, but they need to add up based on the hierarchical structure (__"coherent"__).
+Obtain forecasts of every series at all levels, but they need to add up based on the hierarchical structure (\textbf{"coherent"}).
 \end{block}
 
 :::: {.columns}
 
 ::: {.column width="50%"}
-```{mermaid}
-%%| fig-width: 2.5
-graph TB
-Total((Total)) --- A((A))
-Total --- B((B))
-A --- AA((AA))
-A --- AB((AB))
-B --- BA((BA))
-B --- BB((BB))
-```
+
+![](hierarchical.png){width=100%}
 
 :::
 ::: {.column width="50%"}
@@ -308,16 +300,7 @@ B --- BB((BB))
 
 ## Bottom-up
 
-```{mermaid}
-%%| fig-width: 2.5
-graph TB
-Total((Total)):::top --- A((A)):::middle
-Total --- B((B)):::middle
-A --- AA((AA)):::bottom
-A --- AB((AB)):::bottom
-B --- BA((BA)):::bottom
-B --- BB((BB)):::bottom
-```
+![](hierarchical.png){width=50%}
 
 \begin{textblock}{7}(8,1)
 
@@ -356,18 +339,858 @@ $$
 
 ## Top-down
 
+![](hierarchical.png){width=50%}
+
+\only<1>{\begin{textblock}{7}(8,1)
+
+$$
+y_t = y_{AA, t} + y_{AB, t} + y_{BA, t} + y_{BB, t}
+$$
+$$
+y_{A, t} = y_{AA, t} + y_{AB, t} 
+$$
+$$
+y_{B, t} = y_{BA, t} + y_{BB, t}
+$$
+\end{textblock}}
+
+\only<2>{\begin{textblock}{7}(8,1)
+$$
+\begin{array}{cc}
+\tilde{y}_{AA, h} = p_{AA}\tilde{y}_t & \tilde{y}_{AB, h} =p_{AB}\tilde{y}_t
+\end{array}
+$$
+$$
+\begin{array}{cc}
+\tilde{y}_{BA, h}= p_{BA}\tilde{y}_t &  \tilde{y}_{BB, h} = p_{BB}\tilde{y}_t
+\end{array}
+$$
+
+$$
+\tilde{y}_{A, h} = \tilde{y}_{AA, h} + \tilde{y}_{AB, h} 
+$$
+$$
+\tilde{y}_{B, h} = \tilde{y}_{BA, h} + \tilde{y}_{BB, h}
+$$
+
+\end{textblock}}
+
+## What are the proportions?
+
+:::: {.columns}
+
+::: {.column width="65%"}
 
 
+\begin{block}{Average historical proportions}
+
+$$
+p_j = \frac{1}{T}\sum^T_{t=1}\frac{y_{j,t}}{y_t}
+$$
+\end{block}
+
+
+\begin{block}{Proportions of the historical averages}
+
+$$
+p_j={\sum_{t=1}^{T}\frac{y_{j,t}}{T}}\Big/{\sum_{t=1}^{T}\frac{y_t}{T}}
+$$
+
+
+\end{block}
+:::
+
+::: {.column width="35%"}
+### Forecast proportions
+
+Use the proportion of the base forecasts at a lower level to the aggregate of the base forecasts at this level.
+
+:::
+::::
+
+## Middle-out 
+
+1. Choose a middle level to generate base forecasts
+1. Bottom-up upwards
+1. Top-down downwards
+
+\pause
+
+
+\vspace{2mm}
+### Problem
+
+Seems like a waste - only one level is chosen (top, bottom or middle), and the information in other series are not used. 
 
 # Forecast reconciliation
 
+## Matrix notation
 
-# Variance covariance estimation
+:::: {.columns}
 
-# Properties
+::: {.column width="50%"}
 
-# Geometry
+![](hierarchical.png){width=100%}
 
-# Artificial hierarchy: FLAP
+:::
+::: {.column width="50%"}
+$$
+\begin{bmatrix}
+    y_{t} \\
+    y_{{A},{t} }\\
+    y_{{B},{t} }\\
+    y_{{AA},{t}} \\
+    y_{{AB},{t}} \\
+    y_{{BA},{t}} \\
+    y_{{BB},{t}}
+  \end{bmatrix}
+  =
+  \begin{bmatrix}
+    1 & 1 & 1 & 1 \\
+    1 & 1 & 0 & 0 \\
+    0 & 0 & 1 & 1 \\
+    1  & 0  & 0  & 0  \\
+    0  & 1  & 0  & 0  \\
+    0  & 0  & 1  & 0  \\
+    0  & 0  & 0  & 1
+  \end{bmatrix}
+  \begin{bmatrix}
+    y_{{AA},{t}} \\
+    y_{{AB},{t}} \\
+    y_{{BA},{t}} \\
+    y_{{BB},{t}}
+  \end{bmatrix}
+$$
 
-# Temporal and cross-temporal  forecast reconciliation
+:::
+::::
+
+## Matrix notation
+
+
+:::: {.columns}
+
+::: {.column width="50%"}
+![](grouped-1.png){width=100%}
+:::
+::: {.column width="50%"}
+
+![](grouped-2.png){width=100%}
+
+:::
+::::
+
+\only<2>{\begin{textblock}{8}(7,1)
+\begin{block}{}
+$$
+\begin{bmatrix}
+    y_{t} \\
+    y_{{A},{t}} \\
+    y_{{B},{t}} \\
+    y_{{X},{t}} \\
+    y_{{Y},{t}} \\
+    y_{{AX},{t}} \\
+    y_{{AY},{t}} \\
+    y_{{BX},{t}} \\
+    y_{{BY},{t}}
+  \end{bmatrix}
+  =
+  \begin{bmatrix}
+    1 & 1 & 1 & 1 \\
+    1 & 1 & 0 & 0 \\
+    0 & 0 & 1 & 1 \\
+    1 & 0 & 1 & 0 \\
+    0 & 1 & 0 & 1 \\
+    1 & 0 & 0 & 0 \\
+    0 & 1 & 0 & 0 \\
+    0 & 0 & 1 & 0 \\
+    0 & 0 & 0 & 1
+  \end{bmatrix}
+  \begin{bmatrix}
+    y_{{AX},{t}} \\
+    y_{{AY},{t}} \\
+    y_{{BX},{t}} \\
+    y_{{BY},{t}}
+  \end{bmatrix}
+$$
+\end{block}
+\end{textblock}}
+
+## Matrix notation
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+![](hierarchical.png){width=100%}
+
+:::
+::: {.column width="50%"}
+$$
+\begin{aligned}
+\begin{bmatrix}
+    y_{t} \\
+    y_{{A},{t} }\\
+    y_{{B},{t} }\\
+    y_{{AA},{t}} \\
+    y_{{AB},{t}} \\
+    y_{{BA},{t}} \\
+    y_{{BB},{t}}
+  \end{bmatrix}
+  &=
+  \begin{bmatrix}
+    1 & 1 & 1 & 1 \\
+    1 & 1 & 0 & 0 \\
+    0 & 0 & 1 & 1 \\
+    1  & 0  & 0  & 0  \\
+    0  & 1  & 0  & 0  \\
+    0  & 0  & 1  & 0  \\
+    0  & 0  & 0  & 1
+  \end{bmatrix}
+  \begin{bmatrix}
+    y_{{AA},{t}} \\
+    y_{{AB},{t}} \\
+    y_{{BA},{t}} \\
+    y_{{BB},{t}}
+  \end{bmatrix} \\
+  \bm{y}_t &= \bm{S} \bm{b}_t
+\end{aligned}
+$$
+
+:::
+::::
+
+
+## $h$-step-ahead forecast at time $t$
+
+:::: {.columns}
+
+::: {.column width="25%"}
+$$
+\bm{y}_t = 
+\begin{bmatrix}
+y_{t} \\
+y_{{A},{t} }\\
+y_{{B},{t} }\\
+y_{{AA},{t}} \\
+y_{{AB},{t}} \\
+y_{{BA},{t}} \\
+y_{{BB},{t}}
+\end{bmatrix}
+$$
+
+:::
+::: {.column width="25%"}
+
+$$
+\hat{\bm{y}}_{t+h} = 
+\begin{bmatrix}
+\hat{y}_{t+h} \\
+\hat{y}_{{A},{t+h} }\\
+\hat{y}_{{B},{t+h} }\\
+\hat{y}_{{AA},{t+h}} \\
+\hat{y}_{{AB},{t+h}} \\
+\hat{y}_{{BA},{t+h}} \\
+\hat{y}_{{BB},{t+h}}
+\end{bmatrix}
+$$
+
+:::
+::: {.column width="25%"}
+
+\vspace{10mm}
+
+$$
+\hat{\bm{b}}_{t+h} = 
+\begin{bmatrix}
+\hat{y}_{{AA},{t+h}} \\
+\hat{y}_{{AB},{t+h}} \\
+\hat{y}_{{BA},{t+h}} \\
+\hat{y}_{{BB},{t+h}}
+\end{bmatrix}
+$$
+
+:::
+::: {.column width="25%"}
+
+$$
+\tilde{\bm{y}}_{t+h} = 
+\begin{bmatrix}
+\tilde{y}_{t+h} \\
+\tilde{y}_{{A},{t+h} }\\
+\tilde{y}_{{B},{t+h} }\\
+\tilde{y}_{{AA},{t+h}} \\
+\tilde{y}_{{AB},{t+h}} \\
+\tilde{y}_{{BA},{t+h}} \\
+\tilde{y}_{{BB},{t+h}}
+\end{bmatrix}
+$$
+
+
+:::
+::::
+
+## Forecast reconciliation
+
+$$
+\tilde{\bm{y}}_{t+h}=\bm{S}\bm{G}\hat{\bm{y}}_{t+h}
+$$
+
+:::: {.columns}
+
+::: {.column width="50%"}
+
+### Bottom-up
+
+\vspace{-8mm}
+$$
+\bm{G}=
+  \begin{bmatrix}
+    0 & 0 & 0 & 1 & 0 & 0 & 0\\
+    0 & 0 & 0 & 0 & 1 & 0 & 0\\
+    0 & 0 & 0 & 0 & 0 & 1 & 0\\
+    0 & 0 & 0 & 0 & 0 & 0 & 1\\
+  \end{bmatrix}.
+$$
+
+:::
+::: {.column width="50%"}
+
+### Top-down
+
+\vspace{-8mm}
+$$
+\bm{G}=
+    \begin{bmatrix}
+      p_1 & 0 & 0 & 0 & 0 & 0 & 0\\
+      p_2 & 0 & 0 & 0 & 0 & 0 & 0\\
+      p_3 & 0 & 0 & 0 & 0 & 0 & 0\\
+      p_4 & 0 & 0 & 0 & 0 & 0 & 0\\
+    \end{bmatrix}.
+$$
+
+:::
+::::
+
+
+## Forecast reconciliation
+
+### Limitation
+
+The traditional methods uses only a single level with limited information.
+
+\pause
+
+### Goal
+
+Finding the _"optimal"_ $\bm{G}$ matrix to give the most accurate coherent forecasts in.
+
+\pause
+
+### Optimality
+
+Optimal in the sense of smallest __forecast error variance__ while maintaining __unbiasedness__.
+
+## Unbiasedness
+
+If the base forecasts are __unbiased__ in the sense that
+$$
+\E(\hat{\bm{y}}_{t+h}|\mathcal{I}_t) = \E(\bm{y}_{t+h}|\mathcal{I}_t) = \bm{S}\E(\bm{b}_{t+h}|\mathcal{I}_t),
+$$
+where $\mathcal{I}_t = \bm{y}_1, \bm{y}_2, ..., \bm{y}_t$ denote data observed up to time $t$,
+
+we want the reconciled forecast to maintain this property such that
+$$
+\E(\tilde{\bm{y}}_{t+h}|\mathcal{I}_t) = \E(\bm{y}_{t+h}|\mathcal{I}_t) = \bm{S}\E(\bm{b}_{t+h}|\mathcal{I}_t).
+$$
+
+## Unbiasedness
+
+\begin{block}{Goal}
+$$
+\E(\tilde{\bm{y}}_{t+h}|\mathcal{I}_t) = \E(\bm{y}_{t+h}|\mathcal{I}_t) = \bm{S}\E(\bm{b}_{t+h}|\mathcal{I}_t).
+$$
+\end{block}
+
+$$
+\begin{aligned}
+\E(\tilde{\bm{y}}_{t+h}|\mathcal{I}_t) &= \E(\bm{S}\bm{G}\bm{y}_{t+h}|\mathcal{I}_t) = \bm{S}\bm{G}\E(\bm{y}_{t+h}|\mathcal{I}_t) \\
+&= \bm{S}\bm{G}\E(\bm{S}\bm{b}_{t+h}|\mathcal{I}_t) = \bm{S}\bm{G}\bm{S}\E(\bm{b}_{t+h}|\mathcal{I}_t)
+\end{aligned}
+$$
+
+\pause
+
+### Conclusion
+
+When the base forecasts are unbiased, the reconciled forecasts will be unbiased if and only if $\bm{S}\bm{G}\bm{S} = \bm{S}$, or equivalently, $\bm{G}\bm{S}=\bm{I}$.
+
+
+
+
+## Forecast error variance
+
+Denote the base forecast error variance $\Var(\hat{\bm{\varepsilon}}_{t+h}|\mathcal{I}_t) =\bm{W}_h$:
+
+$$
+\bm{W}_h =
+\begin{pmatrix}
+\Var(y_{t+h}) & \Cov(y_{t+h}, y_{A, t+h}) & \cdots & \Cov(y_{t+h}, y_{BB, t+h}) \\
+\Cov(y_{A, t+h}, y_{t+h}) & \Var(y_{A, t+h}) & \cdots & \Cov(y_{A, t+h}, y_{BB, t+h}) \\
+\vdots & \vdots & \ddots & \vdots \\
+\Cov(y_{BB, t+h}, y_{t+h}) & \Cov(y_{BB, t+h}, y_{A, t+h}) & \cdots & \Var(y_{BB, t+h})
+\end{pmatrix}
+$$
+
+## Forecast error variance
+
+Define 
+$$
+\hat{\bm{\varepsilon}}_{t+h} = \bm{y}_{t+h} - \hat{\bm{y}}_{t+h} \text{ and } \tilde{\bm{\varepsilon}}_{t+h} = \bm{y}_{t+h} - \tilde{\bm{y}}_{t+h}
+$$
+
+\begin{block}{Goal}
+We want to find the forecast error variance $\Var(\tilde{\bm{\varepsilon}}_{t+h}|\mathcal{I}_t).$
+\end{block}
+\pause
+
+$$
+\begin{aligned}
+\tilde{\bm{\varepsilon}}_{t+h} - \hat{\bm{\varepsilon}}_{t+h} & =\bm{y}_{t+h} - \tilde{\bm{y}}_{t+h} -\bm{y}_{t+h} - \hat{\bm{y}}_{t+h}\\
+\tilde{\bm{\varepsilon}}_{t+h} &= \hat{\bm{\varepsilon}}_{t+h} + (\bm{I} - \bm{S}\bm{G})\hat{\bm{y}}_{t+h}\\
+\tilde{\bm{\varepsilon}}_{t+h} &= \hat{\bm{\varepsilon}}_{t+h} + (\bm{I} - \bm{S}\bm{G})(\bm{y}_{t+h}- \hat{\bm{\varepsilon}}_{t+h})\\
+\tilde{\bm{\varepsilon}}_{t+h} &=  \bm{S}\bm{G}\hat{\bm{\varepsilon}}_{t+h} + (\bm{I} - \bm{S}\bm{G})\bm{y}_{t+h}
+\end{aligned}
+$$
+
+--- 
+
+
+$$
+\begin{aligned}
+\tilde{\bm{\varepsilon}}_{t+h} &=  \bm{S}\bm{G}\hat{\bm{\varepsilon}}_{t+h} + (\bm{I} - \bm{S}\bm{G})\bm{S}\bm{b}_{t+h}\\
+\tilde{\bm{\varepsilon}}_{t+h}&=  \bm{S}\bm{G}\hat{\bm{\varepsilon}}_{t+h},
+\end{aligned}
+$$
+because $\bm{S}\bm{G}\bm{S} = \bm{S}$ to maintain unbiasedness.
+
+\pause
+
+### Forecast error variance
+
+The reconciled forecast error variance is
+$$
+\Var(\tilde{\bm{\varepsilon}}_{t+h}|\mathcal{I}_t)= \Var(\bm{S}\bm{G}\hat{\bm{\varepsilon}}_{t+h}|\mathcal{I}_t) = \bm{S}\bm{G}\Var(\hat{\bm{\varepsilon}}_{t+h}|\mathcal{I}_t)\bm{G}'\bm{S}' = \bm{S}\bm{G}\bm{W}_h\bm{G}'\bm{S}'.
+$$
+
+## Minimising sum of forecast error variances
+
+\begin{block}{Trace of a matrix}
+The trace of a square matrix is the sum of the diagnal elements of that matrix.
+\end{block}
+
+\pause 
+
+### The MinT optimal reconciliation approach
+
+\vspace{-2mm}
+@WickEtAl2019-JASA propose the __MinT__ method to minimise the trace of the forecast error varianve $\Var(\tilde{\bm{\varepsilon}}_{t+h}|\mathcal{I}_t)$:
+$$
+\begin{aligned}
+\bm{G} &= \arg\min\operatorname{tr}(\bm{S}\bm{G}\bm{W}_h\bm{G}'\bm{S}') \text{   s.t.   }\bm{S}\bm{G}\bm{S} = \bm{S}\\
+&=(\bm{S}'\bm{W}_h^{-1}\bm{S})^{-1}\bm{S}'\bm{W}_h^{-1}
+\end{aligned}
+$$
+\vspace{-2mm}
+A proof can be found with @AndoNari2024-F.
+
+## Minimising ~~sum of~~ forecast error variances
+
+In fact, the MinT solution not only reaches the minimum of the _trace_ - the _sum_ of the forecast error variances, but also reaches the minimum forecast error varianve individually for each series (Yang et al in a secret working paper).
+
+
+
+
+## Forecast error variance covariance estimation
+
+To perform forecast reconciliation
+$$
+\tilde{\bm{y}}_{t+h}=\bm{S}\bm{G}\hat{\bm{y}}_{t+h},
+$$
+we need 
+$$
+\bm{G} = (\bm{S}'\bm{W}_h^{-1}\bm{S})^{-1}\bm{S}'\bm{W}_h^{-1},
+$$
+which in turn requires $\bm{W}_h$.
+
+### Problem
+
+How do we get the base forecast error variance $\bm{W}_h$?
+
+---
+
+### 1. OLS
+
+Set $\bm{W}_h=k_h\bm{I}$ for all $h$, where $k_h>0$. This gives the OLS estimator.
+
+The value of $k_h$ does not matter because it cancells out in $(\bm{S}'\bm{W}_h^{-1}\bm{S})^{-1}\bm{S}'\bm{W}_h^{-1}$.
+
+\pause
+
+- Fast, independent from the data
+- Good empirical performance
+- Effectively says the base forecast error variances are all $k_h$s and covariances are all $0$s.
+
+---
+
+### 2. WLS (variance scaling)
+
+Set $\bm{W}_{h} = k_{h}\text{diag}(\hat{\bm{W}}_{1})$ for all $h$, where $k_h>0$, 
+$$
+\hat{\bm{W}}_{1} = \frac{1}{T}\sum_{t=1}^{T}\hat{\bm{\varepsilon}}_{t}\hat{\bm{\varepsilon}}_{t}'.
+$$
+
+\pause
+
+- Scales the base forecasts using the variance of the residuals
+- The WLS estimator using _variance scaling_.
+- Assumes base forecast errors are uncorrelated between each other.
+
+---
+
+### 3. Structural scaling
+
+Set $\bm{W}_{h}=k_{h}\bm{\Lambda}$ for all $h$, where $k_h>0$, $\bm{\Lambda}=\text{diag}(\bm{S}\bm{1})$, and $\bm{1}$ is a unit vector.
+
+\pause
+
+- Only depends on the hierarchical structure.
+- Useful when residuals are not available.
+\pause
+- Assumes bottom-level base forecast errors each have variance $k_h$ and are uncorrelated between each other.
+- Each element of $\bm{\Lambda}$ contains the number of forecast error variances contributing to each node.
+
+---
+
+:::: {.columns}
+::: {.column width="50%"}
+
+### 4a. Sample covariance
+
+Set $\bm{W}_{h}=k_{h}\hat{\bm{W}}_1$ for all $h$, where $k_h>0$.
+
+- Direct estimation.
+- Assumes only that the error covariance are proportional to each other.
+\pause
+- Difficult when the structure is large but series are short.
+
+\pause
+
+:::
+::: {.column width="50%"}
+
+### 4b. Shrinkage estimator
+
+__Shrinking covariance__ towards zero [@SchaStri2005-SAGMB] and/or __shrinking variance__ towards their median [@OpgeStri2007-SAGMB].
+
+- Positive definite, and 
+- Numerically stable.
+
+`fable` in R supports shrinking covariance.
+
+:::
+::::
+
+## Forecast Australian domestic tourism
+
+```{r}
+tourism_full <- tourism |>
+  aggregate_key((State / Region) * Purpose, Trips = sum(Trips))
+
+fit <- tourism_full |>
+  filter(year(Quarter) <= 2015) |>
+  model(base = ETS(Trips)) |>
+  reconcile(
+    bu = bottom_up(base),
+    ols = min_trace(base, method = "ols"),
+    mint = min_trace(base, method = "mint_shrink")
+  )
+```
+
+```{r}
+fc <- fit |> forecast(h = "2 years")
+```
+
+```{r}
+fc |>
+  filter(is_aggregated(Region), is_aggregated(Purpose)) |>
+  autoplot(
+    tourism_full |> filter(year(Quarter) >= 2011),
+    level = NULL
+  ) +
+  labs(y = "Trips ('000)") +
+  facet_wrap(vars(State), scales = "free_y") +
+  theme(
+    axis.title = element_blank(),
+    axis.text.y = element_blank(),
+    axis.text.x = element_text(angle = 20)
+  )
+```
+
+
+## Forecast Australian domestic tourism
+
+```{r}
+fc |>
+  filter(is_aggregated(State), !is_aggregated(Purpose)) |>
+  autoplot(
+    tourism_full |> filter(year(Quarter) >= 2011),
+    level = NULL
+  ) +
+  labs(y = "Trips ('000)") +
+  facet_wrap(vars(Purpose), scales = "free_y") +
+  theme(
+    axis.title = element_blank(),
+    axis.text.y = element_blank(),
+    axis.text.x = element_text(angle = 20)
+  )
+```
+
+
+# Projection and geometry
+
+## Reference
+
+The main reference of this section is @PanaEtAl2021-IJF.
+
+## OLS recap
+
+$$
+y_i = \hat{\beta}_0 + \hat{\beta}_1x_i + \hat{u}_i
+$$
+
+$$
+\bm{y} = \hat{\beta}_0 + \hat{\beta}_1\bm{x} + \hat{\bm{u}}
+$$
+
+$$
+\begin{bmatrix}5\\ 2\end{bmatrix} =
+\begin{bmatrix}1\\ 1\end{bmatrix} \hat{\beta}_0 +
+\begin{bmatrix}5\\ 1\end{bmatrix} \hat{\beta}_1 +
+\hat{\bm{u}} =
+\begin{bmatrix}1 & 5\\ 1 & 1\end{bmatrix} \begin{bmatrix}\hat{\beta}_0\\\hat{\beta}_1\end{bmatrix}  +
+\hat{\bm{u}}
+$$
+
+## OLS geometry - 2 observations
+
+\vspace{-3mm}
+$$
+\begin{bmatrix}5\\ 2\end{bmatrix} =
+\begin{bmatrix}1\\ 1\end{bmatrix} \hat{\beta}_0 +
+\begin{bmatrix}5\\ 1\end{bmatrix} \hat{\beta}_1 +
+\hat{\bm{u}} =
+\begin{bmatrix}1 & 5\\ 1 & 1\end{bmatrix} \begin{bmatrix}\hat{\beta}_0\\\hat{\beta}_1\end{bmatrix}  +
+\hat{\bm{u}}
+$$
+
+```{r}
+#| fig-height: 3.4
+tribble(
+  ~x , ~y , ~group ,
+   5 ,  1 , "x1"   ,
+  # 1, 1, "x2",
+  # 5, 2, "y"
+) |>
+  ggplot() +
+  geom_segment(aes(x = 0, y = 0, xend = x, yend = y)) +
+  labs(x = "Dim 1", y = "Dim 2") +
+  ylim(c(0, 2))
+
+```
+
+## OLS geometry - 2 observations
+
+\vspace{-3mm}
+$$
+\begin{bmatrix}5\\ 2\end{bmatrix} =
+\begin{bmatrix}1\\ 1\end{bmatrix} \hat{\beta}_0 +
+\begin{bmatrix}5\\ 1\end{bmatrix} \hat{\beta}_1 +
+\hat{\bm{u}} =
+\begin{bmatrix}1 & 5\\ 1 & 1\end{bmatrix} \begin{bmatrix}\hat{\beta}_0\\\hat{\beta}_1\end{bmatrix}  +
+\hat{\bm{u}}
+$$
+
+```{r}
+#| fig-height: 3.4
+tribble(
+  ~x , ~y , ~group ,
+   5 ,  1 , "x1"   ,
+   1 ,  1 , "x2"   ,
+  # 5, 2, "y"
+) |>
+  ggplot() +
+  geom_segment(aes(x = 0, y = 0, xend = x, yend = y)) +
+  labs(x = "Dim 1", y = "Dim 2") +
+  ylim(c(0, 2))
+
+```
+
+## OLS geometry - 2 observations
+
+\vspace{-3mm}
+$$
+\begin{bmatrix}5\\ 2\end{bmatrix} =
+\begin{bmatrix}1\\ 1\end{bmatrix} \hat{\beta}_0 +
+\begin{bmatrix}5\\ 1\end{bmatrix} \hat{\beta}_1 +
+\hat{\bm{u}} =
+\begin{bmatrix}1 & 5\\ 1 & 1\end{bmatrix} \begin{bmatrix}\hat{\beta}_0\\\hat{\beta}_1\end{bmatrix}  +
+\hat{\bm{u}}
+$$
+
+```{r}
+#| fig-height: 3.4
+tribble(
+  ~x , ~y , ~group ,
+   5 ,  1 , "x1"   ,
+   1 ,  1 , "x2"   ,
+   5 ,  2 , "y"
+) |>
+  ggplot() +
+  geom_segment(aes(x = 0, y = 0, xend = x, yend = y)) +
+  labs(x = "Dim 1", y = "Dim 2")
+
+```
+
+## OLS geometry - 2 observations
+
+\vspace{-3mm}
+$$
+\begin{bmatrix}5\\ 2\end{bmatrix} =
+\begin{bmatrix}1\\ 1\end{bmatrix} \hat{\beta}_0 +
+\begin{bmatrix}5\\ 1\end{bmatrix} \hat{\beta}_1 +
+\hat{\bm{u}} =
+\begin{bmatrix}1 & 5\\ 1 & 1\end{bmatrix} \begin{bmatrix}\hat{\beta}_0\\\hat{\beta}_1\end{bmatrix}  +
+\hat{\bm{u}}
+$$
+
+```{r}
+#| fig-height: 3.4
+x1 <- c(5, 1)
+x2 <- c(1, 1)
+y <- c(5, 2)
+beta <- coef(lm(y ~ x1))
+dash <- rbind(x2, x1) * beta
+colnames(dash) <- c("x", "y")
+
+tibble(x1, x2, y) |>
+  mutate(coor = c("x", "y")[row_number()]) |>
+  pivot_longer(!coor, names_to = "group") |>
+  pivot_wider(names_from = coor) |>
+  ggplot() +
+  geom_segment(aes(x = 0, y = 0, xend = x, yend = y)) +
+  geom_segment(
+    aes(x = 0, y = 0, xend = x, yend = y),
+    data = as_tibble(dash, rownames = "group"),
+    # linetype = "longdash",
+    colour = cbf_palette_grey[[1]],
+    size = 2
+  ) +
+  geom_segment(
+    aes(x = x, y = y, xend = 5, yend = 2),
+    data = as_tibble(dash, rownames = "group"),
+    linetype = "longdash",
+    colour = cbf_palette_grey[[2]],
+    size = 2
+  ) +
+  labs(x = "Dim 1", y = "Dim 2")
+```
+
+## OLS geometry - 3 observations
+
+$$
+\begin{bmatrix}5\\ 2\\ 3\end{bmatrix} =
+\begin{bmatrix}1\\ 1\\ 1\end{bmatrix} \hat{\beta}_0 +
+\begin{bmatrix}5\\ 1\\ 1\end{bmatrix} \hat{\beta}_1 +
+\hat{\bm{u}} =
+\begin{bmatrix}1 & 5\\ 1 & 1\\ 1 & 1\end{bmatrix} \begin{bmatrix}\hat{\beta}_0\\\hat{\beta}_1\end{bmatrix}  +
+\hat{\bm{u}}
+$$
+
+![](ols_geometry/x1.png){fig-align="center" width=60%}
+
+## OLS geometry - 3 observations
+
+$$
+\begin{bmatrix}5\\ 2\\ 3\end{bmatrix} =
+\begin{bmatrix}1\\ 1\\ 1\end{bmatrix} \hat{\beta}_0 +
+\begin{bmatrix}5\\ 1\\ 1\end{bmatrix} \hat{\beta}_1 +
+\hat{\bm{u}} =
+\begin{bmatrix}1 & 5\\ 1 & 1\\ 1 & 1\end{bmatrix} \begin{bmatrix}\hat{\beta}_0\\\hat{\beta}_1\end{bmatrix}  +
+\hat{\bm{u}}
+$$
+
+![](ols_geometry/x2.png){fig-align="center" width=60%}
+
+
+## OLS geometry - 3 observations
+
+$$
+\begin{bmatrix}5\\ 2\\ 3\end{bmatrix} =
+\begin{bmatrix}1\\ 1\\ 1\end{bmatrix} \hat{\beta}_0 +
+\begin{bmatrix}5\\ 1\\ 1\end{bmatrix} \hat{\beta}_1 +
+\hat{\bm{u}} =
+\begin{bmatrix}1 & 5\\ 1 & 1\\ 1 & 1\end{bmatrix} \begin{bmatrix}\hat{\beta}_0\\\hat{\beta}_1\end{bmatrix}  +
+\hat{\bm{u}}
+$$
+
+![](ols_geometry/y.png){fig-align="center" width=60%}
+
+
+## OLS geometry - 3 observations
+
+$$
+\begin{bmatrix}5\\ 2\\ 3\end{bmatrix} =
+\begin{bmatrix}1\\ 1\\ 1\end{bmatrix} \hat{\beta}_0 +
+\begin{bmatrix}5\\ 1\\ 1\end{bmatrix} \hat{\beta}_1 +
+\hat{\bm{u}} =
+\begin{bmatrix}1 & 5\\ 1 & 1\\ 1 & 1\end{bmatrix} \begin{bmatrix}\hat{\beta}_0\\\hat{\beta}_1\end{bmatrix}  +
+\hat{\bm{u}}
+$$
+
+![](ols_geometry/projection.png){fig-align="center" width=60%}
+
+
+## OLS geometry - 3 observations
+
+$$
+\begin{bmatrix}5\\ 2\\ 3\end{bmatrix} =
+\begin{bmatrix}1\\ 1\\ 1\end{bmatrix} \hat{\beta}_0 +
+\begin{bmatrix}5\\ 1\\ 1\end{bmatrix} \hat{\beta}_1 +
+\hat{\bm{u}} =
+\begin{bmatrix}1 & 5\\ 1 & 1\\ 1 & 1\end{bmatrix} \begin{bmatrix}\hat{\beta}_0\\\hat{\beta}_1\end{bmatrix}  +
+\hat{\bm{u}}
+$$
+
+![](ols_geometry/residual.png){fig-align="center" width=60%}
+
+## Forecast reconciliation
+
+### Coherent subspace
+
+THe linear subspace $\mathfrak{s}$ for which the hierarchical structure hold for all $\bm{y}\in\mathfrak{s}$.
+
+\pause
+### Coherent point forecasts
+
+A vector of point forecast $\breve{\bm{y}}_{t+h}$ of all series in the hierarchy is _coherent_ if $\breve{\bm{y}}_{t+h}\in\mathfrak{s}$.
+
+
+
+# Parallel and extensions
+
+## Temporal and cross-temporal forecast reconciliation
+
+## Beyond hierarchy: FLAP
+
+## References
