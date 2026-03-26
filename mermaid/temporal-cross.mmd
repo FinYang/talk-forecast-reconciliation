@@ -1,0 +1,37 @@
+flowchart TD
+
+subgraph T
+  x --- y
+  x --- z
+end
+subgraph T1
+  x1 --- y1
+  x1 --- z1
+end
+subgraph T11
+  x11 --- y11
+  x11 --- z11
+end
+subgraph T12
+  x12 --- y12
+  x12 --- z12
+end
+subgraph T2
+  x2 --- y2
+  x2 --- z2
+end
+subgraph T21
+  x21 --- y21
+  x21 --- z21
+end
+subgraph T22
+  x22 --- y22
+  x22 --- z22
+end
+
+T --- T1
+T --- T2
+T1 --- T11
+T1 --- T12
+T2 --- T21
+T2 --- T22

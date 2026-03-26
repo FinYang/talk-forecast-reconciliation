@@ -553,7 +553,11 @@ $$
     y_{{BA},{t}} \\
     y_{{BB},{t}}
   \end{bmatrix} \\
-  \bm{y}_t &= \bm{S} \bm{b}_t
+  \bm{y}_t &= \bm{S} \bm{b}_t = 
+  \begin{bmatrix}
+  \bm{A}\\ \bm{I}
+  \end{bmatrix}
+  \bm{b}_t
 \end{aligned}
 $$
 
@@ -633,7 +637,7 @@ $$
 ## Forecast reconciliation
 
 $$
-\tilde{\bm{y}}_{t+h}=\bm{S}\bm{G}\hat{\bm{y}}_{t+h}
+\tilde{\bm{y}}_{t+h}=\bm{S}\bm{G}\hat{\bm{y}}_{t+h}=\bm{M}\hat{\bm{y}}_{t+h}
 $$
 
 :::: {.columns}
@@ -808,6 +812,70 @@ A proof can be found with @AndoNari2024-F.
 
 In fact, the MinT solution not only reaches the minimum of the _trace_ - the _sum_ of the forecast error variances, but also reaches the minimum forecast error varianve individually for each series (Yang et al in a secret working paper).
 
+## Alternative representation
+
+:::: {.columns}
+::: {.column width="40%"}
+
+\begin{block}{Structural representation}
+$$
+\tilde{\bm{y}}_{t+h}=\bm{S}\bm{G}\hat{\bm{y}}_{t+h}=\bm{M}\hat{\bm{y}}_{t+h}
+$$
+$$
+\bm{G} = (\bm{S}'\bm{W}_h^{-1}\bm{S})^{-1}\bm{S}'\bm{W}_h^{-1}
+$$
+Mapping matrix:
+$$
+\bm{M} = \bm{S}(\bm{S}'\bm{W}_h^{-1}\bm{S})^{-1}\bm{S}'\bm{W}_h^{-1}
+$$
+\end{block}
+
+:::
+
+\pause
+
+::: {.column width="60%"}
+
+\begin{block}{Zero constrained representation}
+
+$$
+\bm{y}_t = \bm{S} \bm{b}_t = 
+  \begin{bmatrix}
+  \bm{A}\\ \bm{I}
+  \end{bmatrix}
+  \bm{b}_t
+$$
+Constraint matrix:
+$$
+\bm{C} = 
+\begin{bmatrix}
+\bm{I} & -\bm{A}
+\end{bmatrix}
+$$
+$$
+\bm{C}\bm{y}_t=\bm{0}
+$$
+$$
+\bm{M} = \bm{I} - \bm{W}_h\bm{C}'(\bm{C}\bm{W}\bm{C}')^{-1}\bm{C}.
+$$
+
+\end{block}
+:::
+::::
+
+## Zero constrained representation 
+
+THe structural representation 
+$$
+\bm{G} = (\bm{S}'\bm{W}_h^{-1}\bm{S})^{-1}\bm{S}'\bm{W}_h^{-1}
+$$
+requires solving inverse of $\bm{S}'\bm{W}_h^{-1}\bm{S}$ with the dimension being __the number of series at the bottom level__.
+\pause
+The zero constrained representation [see @DiFGiro2023-IJF] is __mostly more efficient__.
+$$
+\bm{M} = \bm{I} - \bm{W}_h\bm{C}'(\bm{C}\bm{W}\bm{C}')^{-1}\bm{C}
+$$
+requires solving inverse of $\bm{C}\bm{W}\bm{C}'$ with the dimension being __the number of series of the upper levels__.
 
 
 
@@ -838,6 +906,7 @@ The value of $k_h$ does not matter because it cancells out in $(\bm{S}'\bm{W}_h^
 \pause
 
 - Fast, independent from the data
+- Distance reducing
 - Good empirical performance
 - Effectively says the base forecast error variances are all $k_h$s and covariances are all $0$s.
 
@@ -900,6 +969,9 @@ __Shrinking covariance__ towards zero [@SchaStri2005-SAGMB] and/or __shrinking v
 
 :::
 ::::
+
+
+
 
 ## Forecast Australian domestic tourism
 
@@ -968,11 +1040,18 @@ The main reference of this section is @PanaEtAl2021-IJF.
 $$
 y_i = \hat{\beta}_0 + \hat{\beta}_1x_i + \hat{u}_i
 $$
-
 $$
 \bm{y} = \hat{\beta}_0 + \hat{\beta}_1\bm{x} + \hat{\bm{u}}
 $$
+$$
+\bm{y} = \bm{X}\hat{\bm{\beta}} + \hat{\bm{u}}
+$$
+$$
+\hat{\beta} = (\bm{X}'\bm{X})^{-1}\bm{X}'\bm{y}
+$$
 
+
+\pause
 $$
 \begin{bmatrix}5\\ 2\end{bmatrix} =
 \begin{bmatrix}1\\ 1\end{bmatrix} \hat{\beta}_0 +
@@ -1174,6 +1253,25 @@ $$
 
 ![](ols_geometry/residual.png){fig-align="center" width=60%}
 
+## Forecast reconciliation as regression
+
+We can write forecast reconciliation as
+$$
+\hat{\bm{y}}_{t+h} = \bm{S}\bm{\beta}_{t+h} + \bm{u}_{t+h}
+$$
+where $\bm{\beta}_{t+h} = \E(\bm{b}_{T+h}|\mathcal{I}_t)$.
+\pause
+The OLS solution of this regression is 
+$$
+\hat{\bm{\beta}}_{t+h} = (\bm{S}'\bm{S})^{-1}\bm{S}'\hat{\bm{y}}_{t+h},
+$$
+which gives 
+$$
+\bm{G} = (\bm{S}'\bm{S})^{-1}\bm{S}'
+$$
+corresponding to the OLS estimator for the forecast error variance from before.
+
+
 ## Forecast reconciliation
 
 ### Coherent subspace
@@ -1186,11 +1284,142 @@ THe linear subspace $\mathfrak{s}$ for which the hierarchical structure hold for
 A vector of point forecast $\breve{\bm{y}}_{t+h}$ of all series in the hierarchy is _coherent_ if $\breve{\bm{y}}_{t+h}\in\mathfrak{s}$.
 
 
+\pause
+### OLS forecast reconciliation
+
+The OLS solution is an orthogonal projection of the base forecasts onto the coherent subspace $\mathfrak{s}$.
+
+## Distance-Reducing Property
+
+If $\tilde{\bm{y}}_{t+h} = \bm{S}\bm{G}\hat{\bm{y}}_{t+h}$, where $\bm{G}$ is such that $\bm{S}\bm{G}$ is an orthogonal projection onto $\mathfrak{s}$, then
+$$
+||\bm{y}_{t+h} - \tilde{\bm{y}}_{t+h}|| \leq ||\bm{y}_{t+h} - \hat{\bm{y}}_{t+h}||.
+$$
+
+## Orthogonal projection
+
+```{r geometry}
+#| cache: false
+knitr::read_chunk("geometry.R")
+```
+
+
+```{r geometry-load}
+#| cache: false
+```
+
+```{r ortho-single}
+#| cache: false
+#| output: false
+```
+```{r geom-out}
+#| cache: false
+#| output: asis
+```
+
+## Oblique projection - MinT
+
+The MinT method is not an orthogonal projection. It is an oblique one.
+
+\begin{block}{MinT}
+$$
+\bm{G} = (\bm{S}'\bm{W}_h^{-1}\bm{S})^{-1}\bm{S}'\bm{W}_h^{-1}
+$$
+\end{block}
+
+While orthogonal projection always improve on base forecasts, MinT minimises the loss function in __expectation__ - minimum forecast error variances.
+
+## Base forecasts
+
+```{r points}
+#| cache: false
+#| output: false
+```
+
+```{r geom-out}
+#| cache: false
+#| output: asis
+```
+
+## Orthogonal projection
+
+```{r points-ortho}
+#| cache: false
+#| output: false
+```
+
+```{r geom-out}
+#| cache: false
+#| output: asis
+```
+
+## Oblique projection - MinT
+
+```{r points-obliq}
+#| cache: false
+#| output: false
+```
+
+```{r geom-out}
+#| cache: false
+#| output: asis
+```
+
 
 # Parallel and extensions
 
-## Temporal and cross-temporal forecast reconciliation
+## Temporal forecast reconciliation 
 
-## Beyond hierarchy: FLAP
+![](temporal.png){width=100%}
+
+## Temporal forecast reconciliation 
+
+- Single series observed at different
+frequencies
+- Structural representation and zero constrained representation both still hold
+- Very underused
+  - Can be applied in most of the case as an extra step to improve accuracy
+- See @AthaEtAl2017-EJOR.
+
+## Cross-temporal forecast reconciliation
+
+![](cross-temporal.png){width=100%}
+
+## Cross-temporal forecast reconciliation
+
+![](temporal-cross.png){width=100%}
+
+## Cross-temporal forecast reconciliation
+
+- Combining the two different hierarchies.
+- More difficult to solve. 
+- Different algorithms and heuristics.
+- See @DiFGiro2023-IJF
+
+## Probabilistic forecast reconciliation
+
+### Forecast distribution
+Apart from forecasting a single point, we can have a full forecast distribution.
+
+### Probabilistic forecast reconciliation
+
+- Any possible forecasts that do not correctly add up according to the hierarchical structure are assigned zero probability.
+- See @PanaEtAl2023-EJOR.
+
+## Forecast Linear Augmented Projection (FLAP)
+
+
+![](flap.png){width=100%}
+
+## FLAP
+
+- Artificial upper level series
+- Suitable for series even without a natural hierarchy
+- Theoretical guarantee to reduce forecast error variance
+    - The more artificial components the better
+    - Optimal solution given a set of components
+- Good empirical performance
+- See @YangEtAl2024-AM
+
 
 ## References

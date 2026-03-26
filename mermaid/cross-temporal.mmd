@@ -1,0 +1,30 @@
+flowchart LR
+subgraph X
+  x --- x1
+  x --- x2
+  x1 --- x11
+  x1 --- x12
+  x2 --- x21
+  x2 --- x22
+end
+
+subgraph Y
+  y --- y1
+  y --- y2
+  y1 --- y11
+  y1 --- y12
+  y2 --- y21
+  y2 --- y22
+end
+
+subgraph Z
+  z --- z1
+  z --- z2
+  z1 --- z11
+  z1 --- z12
+  z2 --- z21
+  z2 --- z22
+end
+
+X --- Y
+X --- Z
