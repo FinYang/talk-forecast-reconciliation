@@ -5,6 +5,7 @@ date: 27 March 2026
 pdf-engine: pdflatex
 toc: true
 bibliography: refs.bib
+keep-tex: false
 format:
   um-presentation-beamer: default
 include-in-header: 
@@ -718,7 +719,7 @@ $$
 
 $$
 \begin{aligned}
-\E(\tilde{\bm{y}}_{t+h}|\mathcal{I}_t) &= \E(\bm{S}\bm{G}\bm{y}_{t+h}|\mathcal{I}_t) = \bm{S}\bm{G}\E(\bm{y}_{t+h}|\mathcal{I}_t) \\
+\E(\tilde{\bm{y}}_{t+h}|\mathcal{I}_t) &= \E(\bm{S}\bm{G}\hat{\bm{y}}_{t+h}|\mathcal{I}_t) = \bm{S}\bm{G}\E(\bm{y}_{t+h}|\mathcal{I}_t) \\
 &= \bm{S}\bm{G}\E(\bm{S}\bm{b}_{t+h}|\mathcal{I}_t) = \bm{S}\bm{G}\bm{S}\E(\bm{b}_{t+h}|\mathcal{I}_t)
 \end{aligned}
 $$
@@ -734,15 +735,15 @@ When the base forecasts are unbiased, the reconciled forecasts will be unbiased 
 
 ## Forecast error variance
 
-Denote the base forecast error variance $\Var(\hat{\bm{\varepsilon}}_{t+h}|\mathcal{I}_t) =\bm{W}_h$:
+The base forecast error is $\hat{\bm{\varepsilon}}_{t+h} = \bm{y}_{t+h} - \hat{\bm{y}}_{t+h}$ and the base forecast error variance is $\Var(\hat{\bm{\varepsilon}}_{t+h}|\mathcal{I}_t) =\bm{W}_h$:
 
 $$
 \bm{W}_h =
 \begin{pmatrix}
-\Var(y_{t+h}) & \Cov(y_{t+h}, y_{A, t+h}) & \cdots & \Cov(y_{t+h}, y_{BB, t+h}) \\
-\Cov(y_{A, t+h}, y_{t+h}) & \Var(y_{A, t+h}) & \cdots & \Cov(y_{A, t+h}, y_{BB, t+h}) \\
+\Var(\hat{\varepsilon}_{t+h}) & \Cov(\hat{\varepsilon}_{t+h}, \hat{\varepsilon}_{A, t+h}) & \cdots & \Cov(\hat{\varepsilon}_{t+h}, \hat{\varepsilon}_{BB, t+h}) \\
+\Cov(\hat{\varepsilon}_{A, t+h}, \hat{\varepsilon}_{t+h}) & \Var(\hat{\varepsilon}_{A, t+h}) & \cdots & \Cov(\hat{\varepsilon}_{A, t+h}, \hat{\varepsilon}_{BB, t+h}) \\
 \vdots & \vdots & \ddots & \vdots \\
-\Cov(y_{BB, t+h}, y_{t+h}) & \Cov(y_{BB, t+h}, y_{A, t+h}) & \cdots & \Var(y_{BB, t+h})
+\Cov(\hat{\varepsilon}_{BB, t+h}, \hat{\varepsilon}_{t+h}) & \Cov(\hat{\varepsilon}_{BB, t+h}, \hat{\varepsilon}_{A, t+h}) & \cdots & \Var(\hat{\varepsilon}_{BB, t+h})
 \end{pmatrix}
 $$
 
@@ -1422,4 +1423,7 @@ Apart from forecasting a single point, we can have a full forecast distribution.
 - See @YangEtAl2024-AM
 
 
-## References
+## References {.allowframebreaks}
+
+::: {#refs}
+:::
