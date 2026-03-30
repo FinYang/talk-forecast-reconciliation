@@ -1,5 +1,6 @@
 library(plotly)
 library(tibble)
+library(tidyverse)
 
 data <- tribble(
   ~x , ~y   , ~z   , ~group       , ~frame ,
